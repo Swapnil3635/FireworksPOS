@@ -1,0 +1,9 @@
+# Netlify deploy config for SHREYAS-sfx.
+# The Next.js Runtime is auto-detected — no plugin block needed.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--no-audit --no-fund"
