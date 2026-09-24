@@ -131,6 +131,8 @@ function SetupScreen() {
   const [busy, setBusy] = useState(false);
   const [hashOut, setHashOut] = useState("");
   const [copied, setCopied] = useState(false);
+  const [continueMsg, setContinueMsg] = useState("");
+  const [checking, setChecking] = useState(false);
 
   const create = async () => {
     setBusy(true);
@@ -148,6 +150,21 @@ function SetupScreen() {
 
   const copy = async () => {
     try { await navigator.clipboard.writeText(`ADMIN_PASS_HASH=${hashOut}`); setCopied(true); } catch { /* noop */ }
+  };
+
+  const cont = async () => {
+    setChecking(true);
+    setContinueMsg("Checking server…");
+    await refresh();
+    const st = useSession.getState().setup;
+    setChecking(false);
+    if (st.hasAdmin) {
+      setContinueMsg("");
+    } else if (!st.ironSet) {
+      setContinueMsg("Server still reports IRON_SECRET missing — redeploy after adding it, then retry.");
+    } else {
+      setContinueMsg("Master still not detected — the redeploy likely finished before the vars were saved, or a value has a typo/extra space. Open /api/sync/status in a new tab: hasAdmin must read true.");
+    }
   };
 
   const input = "w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm outline-none placeholder:text-zinc-500 focus:border-amber-500/60";
@@ -186,7 +203,10 @@ function SetupScreen() {
           <p className="mt-2 text-xs leading-relaxed text-zinc-400">
             Set <code>ADMIN_USERNAME</code> + this <code>ADMIN_PASS_HASH</code> (+ <code>IRON_SECRET</code>) in hosting env, redeploy, then continue.
           </p>
-          <button onClick={refresh} className="btn-ghost mt-2 w-full rounded-xl py-2 text-xs font-bold">I&apos;ve set them — Continue →</button>
+          <button onClick={cont} disabled={checking} className="btn-ghost mt-2 w-full rounded-xl py-2 text-xs font-bold disabled:opacity-50">
+            {checking ? "Checking…" : "I've set them — Continue →"}
+          </button>
+          {continueMsg && <p className="mt-2 text-xs leading-relaxed text-amber-200/90">{continueMsg}</p>}
         </div>
       </div>
     </div>
