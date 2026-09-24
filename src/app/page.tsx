@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import EventBuilder from "@/components/EventBuilder";
 import { usePosStore } from "@/lib/store";
+import { useCanEdit } from "@/lib/session";
 import EmberParticles from "@/components/magic/ember-particles";
 import SparklesText from "@/components/magic/sparkles-text";
 import { inr } from "@/lib/money";
@@ -15,6 +16,7 @@ export default function Home() {
   const events = usePosStore((s) => s.events);
   const stock = usePosStore((s) => s.stock);
   const fin = usePosStore((s) => s.fin);
+  const canEdit = useCanEdit();
   const [showBuilder, setShowBuilder] = useState(false);
 
   const stats = useMemo(() => {
@@ -46,9 +48,11 @@ export default function Home() {
             <b className="text-zinc-200">{stats.upcoming}</b> upcoming ·{" "}
             {stats.clients} clients · <b className="text-amber-200">{inr(stats.pending)}</b> to collect
           </p>
+        {canEdit && (
           <button onClick={() => setShowBuilder((v) => !v)} className="ember-btn shimmer-btn mt-4 rounded-xl px-5 py-2.5 text-sm font-bold">
             <span className="relative z-[2]">{showBuilder ? "Close Builder" : "＋ New Event"}</span>
           </button>
+        )}
         </div>
       </div>
 
@@ -62,7 +66,7 @@ export default function Home() {
         </Marquee>
       )}
 
-      {showBuilder && <div className="mt-4"><EventBuilder onDone={() => setShowBuilder(false)} /></div>}
+      {showBuilder && canEdit && <div className="mt-4"><EventBuilder onDone={() => setShowBuilder(false)} /></div>}
 
       <BentoGrid className="mt-4 sm:grid-cols-2 lg:grid-cols-4">
         <BentoCard>

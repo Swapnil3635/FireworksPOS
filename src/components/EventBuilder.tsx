@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { usePosStore } from "@/lib/store";
 import { pyroBurst } from "@/components/magic/confetti";
 import Button from "@/components/magic/button";
+import { useCanEdit } from "@/lib/session";
 import { eventTotal, uid, type SelectedItem, type SubEvent } from "@/lib/types";
 import { inr } from "@/lib/money";
 
@@ -32,6 +33,7 @@ export default function EventBuilder({ editId, onDone }: { editId?: string; onDo
   const [rows, setRows] = useState<SelectedItem[]>(
     editing?.selected ?? [{ equip: "", qty: 1, rate: 0 }]
   );
+  const canEdit = useCanEdit();
   const [saved, setSaved] = useState(false);
 
   const equipNames = useMemo(() => {
@@ -61,7 +63,7 @@ export default function EventBuilder({ editId, onDone }: { editId?: string; onDo
   const valid = client.trim() && venue.trim() && dates.length > 0 && rows.some((r) => r.equip && r.qty > 0);
 
   const save = async () => {
-    if (!valid) return;
+    if (!valid || !canEdit) return;
     await saveEvent({
       recordId: editId, client, eventType, venue, dates, subEvents,
       selected: rows.filter((r) => r.equip && r.qty > 0),
@@ -160,9 +162,13 @@ export default function EventBuilder({ editId, onDone }: { editId?: string; onDo
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-zinc-300">Estimate: <b className="ember-text text-xl">{inr(total)}</b> <span className="text-xs text-zinc-500">+ GST on bill</span></p>
-        <Button variant="primary" onClick={save} disabled={!valid}>
-          {saved ? "✓ Saved" : editId ? "Save Changes" : "💾 Save Event"}
-        </Button>
+        {canEdit ? (
+          <Button variant="primary" onClick={save} disabled={!valid}>
+            {saved ? "✓ Saved" : editId ? "Save Changes" : "💾 Save Event"}
+          </Button>
+        ) : (
+          <p className="text-xs text-zinc-500">View only — superuser access needed to save.</p>
+        )}
       </div>
     </div>
   );

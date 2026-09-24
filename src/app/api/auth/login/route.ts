@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getSession, loadUsers, verifyPassword, type SessionUser } from "@/lib/auth";
 
 export async function POST(req: Request) {
+  if (!process.env.IRON_SECRET) {
+    return NextResponse.json({ error: "Server auth not configured (IRON_SECRET missing)" }, { status: 501 });
+  }
   const { username, password } = (await req.json()) as { username?: string; password?: string };
   if (!username || !password) return NextResponse.json({ error: "Username + password required" }, { status: 400 });
   const users = await loadUsers();

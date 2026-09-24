@@ -3,6 +3,28 @@
 Sheets is the cloud database. The app works offline (IndexedDB) and syncs
 when online + logged in as admin. Viewers only pull.
 
+## 0. Access control (read this first — the POS is locked by default)
+
+Nobody can open the POS without signing in. There is exactly one privilege
+model:
+
+- **SUPERUSER (admin)** — full access: events, billing, inventory, ledger,
+  settings, backup, and **user management** (create / disable / delete
+  employee logins, reset passwords) under Settings → Viewer accounts.
+- **Employees (viewer)** — read-only access to only the pages you tick
+  (events / calendar / reservations). They cannot save, edit, delete,
+  pay, push sync, or open settings.
+
+First run shows a setup screen instead of the POS:
+
+- `IRON_SECRET` missing → locked screen with owner steps. Set it, redeploy.
+- No superuser yet → **First-run Setup**: either create the master straight
+  into the Sheets Users tab (if Sheets is wired), or generate the
+  `ADMIN_PASS_HASH` value in-browser and set `ADMIN_USERNAME` +
+  `ADMIN_PASS_HASH` (+ `IRON_SECRET`) as env vars, redeploy, continue.
+- The hash generator and bootstrap shut themselves off permanently once a
+  superuser exists. The last superuser cannot be deleted.
+
 ## 1. Create the Sheet
 
 1. In Google Drive → New → Google Sheets → name it `SFX_DB`.

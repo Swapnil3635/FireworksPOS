@@ -141,6 +141,13 @@ export function UsersPanel() {
     alert("Password updated.");
   };
 
+  const remove = async (u: UserRow) => {
+    if (!confirm(`Delete ${u.displayName} (@${u.username})? They lose access immediately.`)) return;
+    const r = await fetch(`/api/users/${u.id}`, { method: "DELETE" });
+    if (r.ok) reload();
+    else alert((await r.json()).error || "Delete failed");
+  };
+
   const input = "rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none placeholder:text-zinc-500";
 
   return (
@@ -157,6 +164,7 @@ export function UsersPanel() {
                 <span className="flex gap-1.5">
                   <button onClick={() => resetPass(u)} className="rounded-lg border border-white/15 px-2 py-1 text-xs">Reset PW</button>
                   <button onClick={() => toggle(u)} className="rounded-lg border border-white/15 px-2 py-1 text-xs">{u.active ? "Disable" : "Enable"}</button>
+                  <button onClick={() => remove(u)} className="rounded-lg border border-red-500/30 px-2 py-1 text-xs text-red-300">Delete</button>
                 </span>
               </div>
             ))}

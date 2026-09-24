@@ -57,7 +57,7 @@ export function verifyPassword(password: string, salt: string, hash: string) {
   }
 }
 
-function envAdmin(): SheetUser | null {
+export function envAdmin(): SheetUser | null {
   const u = process.env.ADMIN_USERNAME ?? "";
   const combined = process.env.ADMIN_PASS_HASH ?? "";
   if (!u || !combined.includes(":")) return null;
@@ -97,4 +97,9 @@ export async function loadUsers(): Promise<SheetUser[]> {
     /* sheets unreachable — fall back to env admin */
   }
   return list;
+}
+
+// True when at least one active superuser exists (env master or Sheets admin).
+export async function hasAnyAdmin(): Promise<boolean> {
+  return (await loadUsers()).some((u) => u.role === "admin" && u.active !== false);
 }

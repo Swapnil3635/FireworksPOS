@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import EventBuilder from "@/components/EventBuilder";
 import { PageHeader } from "@/components/pos-ui";
 import { usePosStore } from "@/lib/store";
+import { useCanEdit } from "@/lib/session";
 import { inr } from "@/lib/money";
 
 export default function EventsPage() {
@@ -11,6 +12,7 @@ export default function EventsPage() {
   const deleteEvent = usePosStore((s) => s.deleteEvent);
   const fin = usePosStore((s) => s.fin);
   const [q, setQ] = useState("");
+  const canEdit = useCanEdit();
   const [status, setStatus] = useState<"Upcoming" | "Completed" | "All">("Upcoming");
   const [editId, setEditId] = useState<string | null>(null);
 
@@ -51,13 +53,15 @@ export default function EventsPage() {
                   <p className="text-xs text-zinc-400">Due {inr(f.pending)}</p>
                 </div>
               </div>
-              <div className="mt-2 flex gap-2">
-                <button onClick={() => setEditId(editId === e.recordId ? null : e.recordId)}
-                  className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold hover:bg-white/5">Edit</button>
-                <button onClick={() => confirm(`Delete ${e.client}?`) && deleteEvent(e.recordId)}
-                  className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-300 hover:bg-red-500/10">Delete</button>
-              </div>
-              {editId === e.recordId && <div className="mt-3"><EventBuilder editId={e.recordId} onDone={() => setEditId(null)} /></div>}
+              {canEdit && (
+                <div className="mt-2 flex gap-2">
+                  <button onClick={() => setEditId(editId === e.recordId ? null : e.recordId)}
+                    className="rounded-lg border border-white/15 px-3 py-1.5 text-xs font-semibold hover:bg-white/5">Edit</button>
+                  <button onClick={() => confirm(`Delete ${e.client}?`) && deleteEvent(e.recordId)}
+                    className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-300 hover:bg-red-500/10">Delete</button>
+                </div>
+              )}
+              {canEdit && editId === e.recordId && <div className="mt-3"><EventBuilder editId={e.recordId} onDone={() => setEditId(null)} /></div>}
             </div>
           );
         })}

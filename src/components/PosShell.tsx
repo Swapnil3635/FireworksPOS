@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { POS_NAV, VIEWER_SAFE_ROUTES } from "@/lib/nav";
@@ -85,7 +85,7 @@ function LoginScreen() {
     <div className="flex min-h-dvh items-center justify-center p-4">
       <div className="glass-card w-full max-w-sm rounded-3xl p-6">
         <p className="ember-text text-center text-2xl font-extrabold">🎆 SHREYAS SFX</p>
-        <p className="mt-1 text-center text-xs text-zinc-400">Sign in to the POS</p>
+        <p className="mt-1 text-center text-xs text-zinc-400">Restricted — sign in to continue</p>
         <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" autoComplete="username"
           className="mt-4 w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm outline-none placeholder:text-zinc-500 focus:border-amber-500/60" />
         <input value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -100,12 +100,106 @@ function LoginScreen() {
   );
 }
 
+function LockedScreen() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center p-4">
+      <div className="glass-card w-full max-w-md rounded-3xl p-6">
+        <p className="ember-text text-center text-2xl font-extrabold">🔒 POS Locked</p>
+        <p className="mt-2 text-center text-sm text-zinc-300">
+          This POS is private. The server is missing its <code>IRON_SECRET</code>, so nobody can sign in yet.
+        </p>
+        <div className="mt-3 rounded-2xl bg-black/30 p-4 text-xs leading-relaxed text-zinc-400">
+          <p className="font-bold text-zinc-200">Owner setup (one time):</p>
+          <p className="mt-1">1. Generate a secret: <code>node -e &quot;console.log(require(&apos;crypto&apos;).randomBytes(32).toString(&apos;hex&apos;))&quot;</code></p>
+          <p>2. Set <code>IRON_SECRET</code> in hosting env, redeploy.</p>
+          <p>3. Reload — you&apos;ll get the superuser setup screen.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SetupScreen() {
+  const bootstrap = useSession((s) => s.bootstrap);
+  const setupHash = useSession((s) => s.setupHash);
+  const refresh = useSession((s) => s.refresh);
+  const setup = useSession((s) => s.setup);
+  const [uname, setUname] = useState("admin");
+  const [dname, setDname] = useState("Administrator");
+  const [pass, setPass] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [hashOut, setHashOut] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const create = async () => {
+    setBusy(true);
+    const e = await bootstrap(uname, dname, pass);
+    setErr(e ?? "");
+    setBusy(false);
+    if (!e) refresh();
+  };
+
+  const gen = async () => {
+    const r = await setupHash(pass);
+    if (r.error) setErr(r.error);
+    else { setHashOut(r.value ?? ""); setErr(""); setCopied(false); }
+  };
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(`ADMIN_PASS_HASH=${hashOut}`); setCopied(true); } catch { /* noop */ }
+  };
+
+  const input = "w-full rounded-xl border border-white/10 bg-black/40 px-3 py-2.5 text-sm outline-none placeholder:text-zinc-500 focus:border-amber-500/60";
+
+  return (
+    <div className="flex min-h-dvh items-center justify-center p-4">
+      <div className="glass-card w-full max-w-md rounded-3xl p-6">
+        <p className="ember-text text-center text-2xl font-extrabold">🎆 First-run Setup</p>
+        <p className="mt-1 text-center text-xs text-zinc-400">Create the MASTER superuser. Afterwards, only signed-in users get in.</p>
+
+        {setup.configured && (
+          <div className="mt-4 rounded-2xl border border-amber-500/30 bg-amber-500/[0.06] p-4">
+            <p className="text-sm font-bold text-amber-200">Create master (saved to Sheets)</p>
+            <input value={uname} onChange={(e) => setUname(e.target.value)} placeholder="Username" className={`${input} mt-2`} />
+            <input value={dname} onChange={(e) => setDname(e.target.value)} placeholder="Display name" className={`${input} mt-2`} />
+            <input value={pass} onChange={(e) => setPass(e.target.value)} type="password" placeholder="Password (8+ chars)" className={`${input} mt-2`} />
+            {err && <p className="mt-2 text-xs font-semibold text-red-300">{err}</p>}
+            <button onClick={create} disabled={busy} className="ember-btn mt-3 w-full rounded-xl py-2.5 text-sm font-bold disabled:opacity-50">
+              {busy ? "Creating…" : "Create Superuser & Sign In"}
+            </button>
+          </div>
+        )}
+
+        <div className="mt-3 rounded-2xl border border-white/10 bg-black/30 p-4">
+          <p className="text-sm font-bold text-zinc-100">…or env master (no Sheets needed)</p>
+          <div className="mt-2 flex gap-2">
+            <input value={pass} onChange={(e) => setPass(e.target.value)} type="password" placeholder="Password (8+ chars)" className={input} />
+            <button onClick={gen} className="btn-ghost shrink-0 rounded-xl px-4 text-sm font-bold">Hash</button>
+          </div>
+          {hashOut && (
+            <div className="mt-2">
+              <p className="break-all rounded-xl bg-black/50 p-2 font-mono text-[11px] text-amber-200">ADMIN_PASS_HASH={hashOut}</p>
+              <button onClick={copy} className="btn-ghost mt-2 w-full rounded-xl py-2 text-xs font-bold">{copied ? "✓ Copied" : "Copy value"}</button>
+            </div>
+          )}
+          <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+            Set <code>ADMIN_USERNAME</code> + this <code>ADMIN_PASS_HASH</code> (+ <code>IRON_SECRET</code>) in hosting env, redeploy, then continue.
+          </p>
+          <button onClick={refresh} className="btn-ghost mt-2 w-full rounded-xl py-2 text-xs font-bold">I&apos;ve set them — Continue →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PosShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const ready = usePosStore((s) => s.ready);
   const hydrate = usePosStore((s) => s.hydrate);
-  const { user, loading, authRequired, refresh, logout } = useSession();
+  const { user, loading, setup, refresh, logout } = useSession();
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => { hydrate(); }, [hydrate]);
   useEffect(() => { refresh(); }, [refresh]);
@@ -116,6 +210,14 @@ export default function PosShell({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Employees land on their first permitted page instead of a dead home.
+  useEffect(() => {
+    if (user?.role === "viewer" && pathname === "/") {
+      const v = allowedHrefs(user.role, user.permissions ?? []);
+      if (v[0]) router.replace(v[0]);
+    }
+  }, [pathname, router, user]);
+
   if (!ready || loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
@@ -124,7 +226,10 @@ export default function PosShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (authRequired && !user) return <LoginScreen />;
+  // Secure by default: no open access, ever.
+  if (!setup.ironSet) return <LockedScreen />;
+  if (setup.needsSetup && !user) return <SetupScreen />;
+  if (!user) return <LoginScreen />;
 
   const visible = allowedHrefs(user?.role, user?.permissions ?? []);
   const blocked = user?.role === "viewer" && pathname && !visible.includes(pathname) &&
