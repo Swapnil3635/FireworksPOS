@@ -1,0 +1,94 @@
+{
+  "exportedAt": "2026-09-22T00:00:00.000Z",
+  "source": "P1 demo seed (fireworks & pyro)",
+  "records": [
+    {
+      "recordId": "rec_demo1",
+      "client": "Aarav Sharma",
+      "eventType": "Wedding",
+      "venue": "Taj Lawns, Pune",
+      "dates": ["2026-11-14", "2026-11-15"],
+      "subEvents": [
+        { "id": "sub1", "date": "2026-11-14", "time": "Evening", "name": "Sangeet Night" },
+        { "id": "sub2", "date": "2026-11-15", "time": "Night", "name": "Wedding Ceremony" }
+      ],
+      "selected": [
+        { "equip": "CO2 Jet", "qty": 4, "rate": 3500 },
+        { "equip": "Cold Pyro Fountain", "qty": 12, "rate": 1800 },
+        { "equip": "Shell Cracker 3.5in", "qty": 20, "rate": 950 }
+      ],
+      "grandTotal": 54600,
+      "createdAt": "2026-09-10T10:00:00.000Z"
+    },
+    {
+      "recordId": "rec_demo2",
+      "client": "TechNova Annual Meet",
+      "eventType": "Corporate",
+      "venue": "Hitex Hall 2, Hyderabad",
+      "dates": ["2026-10-02"],
+      "subEvents": [],
+      "selected": [
+        { "equip": "CO2 Jet", "qty": 2, "rate": 3500 },
+        { "equip": "Confetti Blaster", "qty": 4, "rate": 2200 }
+      ],
+      "grandTotal": 15800,
+      "createdAt": "2026-09-12T10:00:00.000Z"
+    }
+  ],
+  "inventoryData": [
+    { "equip": "CO2 Jet", "consumable": "CO2 Cylinder", "qtyPerUnit": 1 },
+    { "equip": "Cold Pyro Fountain", "consumable": "Pyro Cartridge", "qtyPerUnit": 2 },
+    { "equip": "Shell Cracker 3.5in", "consumable": "Shell + Fuse", "qtyPerUnit": 1 },
+    { "equip": "Confetti Blaster", "consumable": "Confetti CO2", "qtyPerUnit": 1 },
+    { "equip": "Flame Projector", "consumable": "Fuel Can", "qtyPerUnit": 1 }
+  ],
+  "masterInventory": {
+    "CO2 Jet": 10,
+    "Cold Pyro Fountain": 30,
+    "Shell Cracker 3.5in": 100,
+    "Confetti Blaster": 8,
+    "Flame Projector": 6
+  },
+  "inventoryRates": {
+    "CO2 Jet": 3500,
+    "Cold Pyro Fountain": 1800,
+    "Shell Cracker 3.5in": 950,
+    "Confetti Blaster": 2200,
+    "Flame Projector": 4200
+  },
+  "billPayments": {
+    "bill_aarav_sharma_taj_lawns,_pune_2026-11-14_2026-11-15": [
+      { "id": "pay1", "amount": 20000, "date": "2026-09-15", "mode": "UPI", "receivedAccount": "Axis Bank", "clientName": "Aarav Sharma", "billNo": "SFX-001" }
+    ]
+  },
+  "billAdjustments": {
+    "bill_aarav_sharma_taj_lawns,_pune_2026-11-14_2026-11-15": [
+      { "id": "adj1", "type": "Transport", "amount": 2500, "reason": "Truck + crew travel", "date": "2026-09-15" }
+    ]
+  },
+  "ledgerEntries": [],
+  "ledgerDeleted": [],
+  "expenses": [
+    {
+      "id": "exp1",
+      "expenseType": "Business",
+      "vendor": "PyroWholesale Co",
+      "category": "Consumables",
+      "items": [{ "name": "Pyro Cartridge", "qty": 50, "rate": 320 }],
+      "expenseDate": "2026-09-14",
+      "paymentMethod": "Bank",
+      "paidAccount": "Axis Bank",
+      "grandTotal": 16000,
+      "status": "Paid"
+    }
+  ],
+  "vendors": [
+    { "id": "v1", "name": "PyroWholesale Co", "mobile": "9822000001" },
+    { "id": "v2", "name": "CO2 Refill Point", "mobile": "9822000002" }
+  ],
+  "vendorItems": [
+    { "id": "vi1", "name": "Pyro Cartridge", "defaultRate": 320, "unit": "pcs" },
+    { "id": "vi2", "name": "CO2 Cylinder refill", "defaultRate": 1800, "unit": "cyl" }
+  ],
+  "walletAccounts": ["Cash", "Axis Bank", "SBI", "Janata"]
+}
